@@ -1,11 +1,12 @@
 #pragma once
 
+#include "Types/column.h"
+#include "Types/row.h"
+
 #include <string>
 #include <vector>
 #include <iostream>
 #include <type_traits>
-#include "Types/column.h"
-#include "Types/row.h"
 
 template <typename T>
 class Matrix;
@@ -17,9 +18,9 @@ template <typename T>
 class Matrix
 {
 private:
-    Column m_nCols{}; // Colums
-    Row m_nRows{};    // Rows
-    std::vector<std::vector<T>> m_aMatrix{};
+    Column m_Columns{}; // Colums
+    Row m_Rows{};    // Rows
+    std::vector<std::vector<T>> m_Matrix{};
 
     Matrix() noexcept = default;
     Matrix(const Row &rows, const Column &cols);
@@ -69,14 +70,14 @@ public:
 template <typename T>
 Matrix<T>::Matrix(const Row &rows, const Column &cols)
 {
-    this->m_nCols = cols;
-    this->m_nRows = rows;
-    if (this->m_nRows > 0ul)
+    this->m_Columns = cols;
+    this->m_Rows = rows;
+    if (this->m_Rows > 0ul)
     {
-        this->m_aMatrix.resize(m_nRows.get());
-        if (this->m_nCols > 0ul)
+        this->m_Matrix.resize(m_Rows.get());
+        if (this->m_Columns > 0ul)
         {
-            for (auto &&column : this->m_aMatrix)
+            for (auto &&column : this->m_Matrix)
             {
                 column.resize(cols.get());
             }
@@ -87,34 +88,34 @@ Matrix<T>::Matrix(const Row &rows, const Column &cols)
 template <typename T>
 Matrix<T>::Matrix(const std::vector<T> &array)
 {
-    this->m_nCols = 1;
-    this->m_nRows = array.size();
+    this->m_Columns = 1;
+    this->m_Rows = array.size();
 
-    this->m_aMatrix.resize(this->m_nRows.get());
-    for (size_t i = 0; i < this->m_nRows; i++)
+    this->m_Matrix.resize(this->m_Rows.get());
+    for (size_t i = 0; i < this->m_Rows; i++)
     {
-        this->m_aMatrix.at(i).push_back(array.at(i));
+        this->m_Matrix.at(i).push_back(array.at(i));
     }
 }
 
 template <typename T>
 Matrix<T>::Matrix(const std::vector<std::vector<T>> &input_matrix)
 {
-    this->m_nRows = input_matrix.size();
-    if (this->m_nRows > 0ul)
-        this->m_nCols = input_matrix.at(0).size();
+    this->m_Rows = input_matrix.size();
+    if (this->m_Rows > 0ul)
+        this->m_Columns = input_matrix.at(0).size();
     else
-        this->m_nCols = 0;
+        this->m_Columns = 0;
 
-    this->m_aMatrix = input_matrix;
+    this->m_Matrix = input_matrix;
 }
 
 template <typename T>
 Matrix<T>::Matrix(const Matrix<T> &org)
 {
-    this->m_nCols = org.m_nCols;
-    this->m_nRows = org.m_nRows;
-    this->m_aMatrix = org.m_aMatrix;
+    this->m_Columns = org.m_Columns;
+    this->m_Rows = org.m_Rows;
+    this->m_Matrix = org.m_Matrix;
 }
 
 template <typename T>
@@ -149,19 +150,19 @@ Matrix<T> Matrix<T>::create(const Matrix<T> &org)
 template <typename T>
 std::vector<std::vector<T>> Matrix<T>::getMatrix(void) const noexcept
 {
-    return this->m_aMatrix;
+    return this->m_Matrix;
 }
 
 template <typename T>
 constexpr const Row &Matrix<T>::getRows() const noexcept
 {
-    return this->m_nRows;
+    return this->m_Rows;
 }
 
 template <typename T>
 constexpr const Column &Matrix<T>::getCols() const noexcept
 {
-    return this->m_nCols;
+    return this->m_Columns;
 }
 
 template <typename T>
@@ -171,7 +172,7 @@ bool Matrix<T>::randomizeWithInts(void)
     {
         std::srand(static_cast<unsigned int>(time(NULL)));
 
-        for (auto &column : this->m_aMatrix)
+        for (auto &column : this->m_Matrix)
         {
             for (auto &element : column)
             {
@@ -181,7 +182,7 @@ bool Matrix<T>::randomizeWithInts(void)
     }
     else
     {
-        for (const auto &column : this->m_aMatrix)
+        for (const auto &column : this->m_Matrix)
         {
             for (const auto &element : column)
             {
@@ -197,7 +198,7 @@ template <typename T>
 const std::string Matrix<T>::toString() const noexcept
 {
     std::string result = "";
-    for (auto &&column : this->m_aMatrix)
+    for (auto &&column : this->m_Matrix)
     {
         result += " | ";
         for (auto &&element : column)
@@ -215,20 +216,20 @@ bool Matrix<T>::transpose()
 {
     std::vector<std::vector<T>> result = this->getMatrix();
 
-    Matrix<T> newMatrix = create(Row{this->m_nCols.get()}, Column{this->m_nRows.get()});
-    this->m_aMatrix = newMatrix.m_aMatrix;
+    Matrix<T> newMatrix = create(Row{this->m_Columns.get()}, Column{this->m_Rows.get()});
+    this->m_Matrix = newMatrix.m_Matrix;
 
-    for (size_t i = 0; i < this->m_nCols; i++)
+    for (size_t i = 0; i < this->m_Columns; i++)
     {
-        for (size_t j = 0; j < this->m_nRows; j++)
+        for (size_t j = 0; j < this->m_Rows; j++)
         {
-            this->m_aMatrix.at(i).at(j) = result.at(j).at(i);
+            this->m_Matrix.at(i).at(j) = result.at(j).at(i);
         }
     }
 
-    Row temp{this->m_nRows};
-    this->m_nRows = this->m_nCols.get();
-    this->m_nCols = temp.get();
+    Row temp{this->m_Rows};
+    this->m_Rows = this->m_Columns.get();
+    this->m_Columns = temp.get();
 
     return true;
 }
@@ -236,9 +237,9 @@ bool Matrix<T>::transpose()
 template <typename T>
 void Matrix<T>::erase() noexcept
 {
-    this->m_aMatrix.clear();
-    this->m_nCols = 0ul;
-    this->m_nRows = 0ul;
+    this->m_Matrix.clear();
+    this->m_Columns = 0ul;
+    this->m_Rows = 0ul;
 }
 
 template <typename T>
@@ -259,9 +260,9 @@ std::ostream &operator<<(std::ostream &os, const Matrix<T> &matrix)
 template <typename T>
 Matrix<T> &Matrix<T>::operator=(const Matrix<T> &org)
 {
-    this->m_nCols = org.m_nCols;
-    this->m_nRows = org.m_nRows;
-    this->m_aMatrix = org.m_aMatrix;
+    this->m_Columns = org.m_Columns;
+    this->m_Rows = org.m_Rows;
+    this->m_Matrix = org.m_Matrix;
 
     return *this;
 }
@@ -322,15 +323,15 @@ Matrix<T> &Matrix<T>::operator*=(const T &n)
 template <typename T>
 Matrix<T> Matrix<T>::operator+(const Matrix<T> &org)
 {
-    if (this->m_nRows.get() == org.m_nRows.get() || this->m_nCols.get() == org.m_nCols.get())
+    if (this->m_Rows.get() == org.m_Rows.get() || this->m_Columns.get() == org.m_Columns.get())
     {
-        Matrix<T> result = create(this->m_nRows, this->m_nCols);
+        Matrix<T> result = create(this->m_Rows, this->m_Columns);
 
-        for (size_t i = 0; i < this->m_aMatrix.size(); i++)
+        for (size_t i = 0; i < this->m_Matrix.size(); i++)
         {
-            for (size_t j = 0; j < this->m_aMatrix.at(i).size(); j++)
+            for (size_t j = 0; j < this->m_Matrix.at(i).size(); j++)
             {
-                result.m_aMatrix.at(i).at(j) = this->m_aMatrix.at(i).at(j) + org.m_aMatrix.at(i).at(j);
+                result.m_Matrix.at(i).at(j) = this->m_Matrix.at(i).at(j) + org.m_Matrix.at(i).at(j);
             }
         }
         return result;
@@ -342,13 +343,13 @@ Matrix<T> Matrix<T>::operator+(const Matrix<T> &org)
 template <typename T>
 Matrix<T> Matrix<T>::operator+(const T &n)
 {
-    Matrix<T> result = create(this->m_nRows, this->m_nCols);
-    for (size_t i = 0; i < this->m_nRows; i++)
+    Matrix<T> result = create(this->m_Rows, this->m_Columns);
+    for (size_t i = 0; i < this->m_Rows; i++)
     {
 
-        for (size_t j = 0; j < this->m_nCols; j++)
+        for (size_t j = 0; j < this->m_Columns; j++)
         {
-            result.m_aMatrix.at(i).at(j) = this->m_aMatrix.at(i).at(j) + n;
+            result.m_Matrix.at(i).at(j) = this->m_Matrix.at(i).at(j) + n;
         }
     }
 
@@ -358,15 +359,15 @@ Matrix<T> Matrix<T>::operator+(const T &n)
 template <typename T>
 Matrix<T> Matrix<T>::operator-(const Matrix<T> &org)
 {
-    if (this->m_nRows.get() == org.m_nRows.get() || this->m_nCols.get() == org.m_nCols.get())
+    if (this->m_Rows.get() == org.m_Rows.get() || this->m_Columns.get() == org.m_Columns.get())
     {
-        Matrix<T> result = create(this->m_nRows, this->m_nCols);
+        Matrix<T> result = create(this->m_Rows, this->m_Columns);
 
-        for (size_t i = 0; i < this->m_aMatrix.size(); i++)
+        for (size_t i = 0; i < this->m_Matrix.size(); i++)
         {
-            for (size_t j = 0; j < this->m_aMatrix.at(i).size(); j++)
+            for (size_t j = 0; j < this->m_Matrix.at(i).size(); j++)
             {
-                result.m_aMatrix.at(i).at(j) = this->m_aMatrix.at(i).at(j) - org.m_aMatrix.at(i).at(j);
+                result.m_Matrix.at(i).at(j) = this->m_Matrix.at(i).at(j) - org.m_Matrix.at(i).at(j);
             }
         }
         return result;
@@ -378,13 +379,13 @@ Matrix<T> Matrix<T>::operator-(const Matrix<T> &org)
 template <typename T>
 Matrix<T> Matrix<T>::operator-(const T &n)
 {
-    Matrix<T> result = create(this->m_nRows, this->m_nCols);
-    for (size_t i = 0; i < this->m_nRows; i++)
+    Matrix<T> result = create(this->m_Rows, this->m_Columns);
+    for (size_t i = 0; i < this->m_Rows; i++)
     {
 
-        for (size_t j = 0; j < this->m_nCols; j++)
+        for (size_t j = 0; j < this->m_Columns; j++)
         {
-            result.m_aMatrix.at(i).at(j) = this->m_aMatrix.at(i).at(j) - n;
+            result.m_Matrix.at(i).at(j) = this->m_Matrix.at(i).at(j) - n;
         }
     }
 
@@ -395,18 +396,18 @@ template <typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix<T> &org)
 {
     std::vector<std::vector<T>> result;
-    if (this->m_nCols.get() == org.m_nRows.get())
+    if (this->m_Columns.get() == org.m_Rows.get())
     {
-        result.resize(this->m_nRows.get());
-        for (size_t i = 0; i < this->m_nRows.get(); i++)
+        result.resize(this->m_Rows.get());
+        for (size_t i = 0; i < this->m_Rows.get(); i++)
         {
-            result.at(i).resize(org.m_nCols.get());
-            for (size_t j = 0; j < org.m_nCols.get(); j++)
+            result.at(i).resize(org.m_Columns.get());
+            for (size_t j = 0; j < org.m_Columns.get(); j++)
             {
                 T sum = 0;
-                for (size_t k = 0; k < this->m_nCols.get(); k++)
+                for (size_t k = 0; k < this->m_Columns.get(); k++)
                 {
-                    sum += this->m_aMatrix.at(i).at(k) * org.m_aMatrix.at(k).at(j);
+                    sum += this->m_Matrix.at(i).at(k) * org.m_Matrix.at(k).at(j);
                 }
                 result.at(i).at(j) = sum;
             }
@@ -414,13 +415,13 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &org)
     }
     else if (*this == org)
     {
-        result.resize(this->m_nRows.get());
+        result.resize(this->m_Rows.get());
         for (size_t i = 0; i < result.size(); i++)
         {
-            result.at(i).resize(this->m_nCols.get());
+            result.at(i).resize(this->m_Columns.get());
             for (size_t j = 0; j < result.at(i).size(); j++)
             {
-                result.at(i).at(j) = this->m_aMatrix.at(i).at(j) * this->m_aMatrix.at(i).at(j);
+                result.at(i).at(j) = this->m_Matrix.at(i).at(j) * this->m_Matrix.at(i).at(j);
             }
         }
     }
@@ -430,12 +431,12 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &org)
 template <typename T>
 Matrix<T> Matrix<T>::operator*(const T &n)
 {
-    Matrix<T> result = create(this->m_nRows, this->m_nCols);
-    for (size_t i = 0; i < this->m_nRows; i++)
+    Matrix<T> result = create(this->m_Rows, this->m_Columns);
+    for (size_t i = 0; i < this->m_Rows; i++)
     {
-        for (size_t j = 0; j < this->m_nCols; j++)
+        for (size_t j = 0; j < this->m_Columns; j++)
         {
-            result.m_aMatrix.at(i).at(j) = this->m_aMatrix.at(i).at(j) * n;
+            result.m_Matrix.at(i).at(j) = this->m_Matrix.at(i).at(j) * n;
         }
     }
 
@@ -445,13 +446,13 @@ Matrix<T> Matrix<T>::operator*(const T &n)
 template <typename T>
 bool Matrix<T>::operator==(const Matrix<T> &org)
 {
-    if (this->m_nCols.get() == org.m_nCols.get() && this->m_nRows.get() == org.m_nRows.get())
+    if (this->m_Columns.get() == org.m_Columns.get() && this->m_Rows.get() == org.m_Rows.get())
     {
-        for (size_t i = 0; i < this->m_nRows; i++)
+        for (size_t i = 0; i < this->m_Rows; i++)
         {
-            for (size_t j = 0; j < this->m_nCols; j++)
+            for (size_t j = 0; j < this->m_Columns; j++)
             {
-                if (this->m_aMatrix.at(i).at(j) != org.m_aMatrix.at(i).at(j))
+                if (this->m_Matrix.at(i).at(j) != org.m_Matrix.at(i).at(j))
                     return false;
             }
         }
