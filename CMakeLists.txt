@@ -11,10 +11,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# file(GLOB TARGET_SRC "./src/*.cpp" "./src/*.h" )
-
-# add_executable(matrix ${TARGET_SRC})
-
 
 add_subdirectory(src)
 add_subdirectory(lib)

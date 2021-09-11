@@ -28,8 +28,6 @@ private:
     Matrix(const std::vector<std::vector<T>> &input_matrix);
 
 public:
-    Matrix(const Matrix<T> &org);
-
     static Matrix<T> create();
     static Matrix<T> create(const Row &rows, const Column &cols);
     static Matrix<T> create(const std::vector<T> &array);
@@ -108,14 +106,6 @@ Matrix<T>::Matrix(const std::vector<std::vector<T>> &input_matrix)
         this->m_Columns = 0;
 
     this->m_Matrix = input_matrix;
-}
-
-template <typename T>
-Matrix<T>::Matrix(const Matrix<T> &org)
-{
-    this->m_Columns = org.m_Columns;
-    this->m_Rows = org.m_Rows;
-    this->m_Matrix = org.m_Matrix;
 }
 
 template <typename T>
