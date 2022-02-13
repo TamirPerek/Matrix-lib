@@ -4,6 +4,8 @@ set(THIS Matrix)
 
 project(${THIS} VERSION 0.1.0)
 
+option(MATRIX_INCLUDE_TESTS "Remove GoogleTest dependecy." ON)
+
 enable_testing()
 
 # specify the C++ standard
@@ -19,4 +21,6 @@ set(CPACK_PROJECT_NAME ${THIS})
 set(CPACK_PROJECT_VERSION ${THIS})
 include(CPack)
 
-add_subdirectory(test)
+if(MATRIX_INCLUDE_TESTS)
+    add_subdirectory(test) 
+endif()
