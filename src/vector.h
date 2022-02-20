@@ -203,7 +203,7 @@ bool Vector<T>::operator!=(const Vector<T> &xOther) noexcept
 template <typename T>
 T Vector<T>::magnitude() const noexcept
 {
-#ifdef __GNUG__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is not yet solved
+#if defined(__clang__) || defined(_MSC_VER) // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is not yet solved
     if constexpr (std::is_integral<T>::value || std::is_same<double, T>::value)
     {
         T tSum{0};
@@ -236,7 +236,12 @@ T Vector<T>::magnitude() const noexcept
     }
     else
     {
-        return static_cast<T>(std::sqrtf(tSum));
+        T tSum{0};
+        for (const auto &tElem : m_Data)
+        {
+            tSum += tElem * tElem;
+        }
+        return static_cast<T>(std::sqrt(tSum));
     }
 #else
     T tSum{0};
