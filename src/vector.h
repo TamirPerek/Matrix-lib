@@ -35,7 +35,7 @@ public:
     T &at(const std::size_t &xPos) noexcept(false) { return m_Data.at(xPos); }
     std::size_t size() const noexcept { return m_Data.size(); }
 
-    //Vector math
+    // Vector math
     T magnitude() const noexcept;
     void normalize() noexcept;
     bool opposite(const Vector<T> &xOther) const noexcept;
@@ -203,7 +203,7 @@ bool Vector<T>::operator!=(const Vector<T> &xOther) noexcept
 template <typename T>
 T Vector<T>::magnitude() const noexcept
 {
-#ifdef __GNUC__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is not yet solved
+#ifdef __GNUG__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is not yet solved
     if constexpr (std::is_integral<T>::value || std::is_same<double, T>::value)
     {
         T tSum{0};
@@ -236,7 +236,7 @@ T Vector<T>::magnitude() const noexcept
     }
     else
     {
-        return NAN;
+        return static_cast<T>(std::sqrtf(tSum));
     }
 #else
     T tSum{0};
