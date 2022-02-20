@@ -284,12 +284,21 @@ bool Vector<T>::parallel(const Vector<T> &xOther) const noexcept
 {
     if (xOther.size() != size())
         return false;
-    const auto &tToControl = m_Data.at(0) / xOther.at(0);
+    const auto tToControl = m_Data.at(0) / xOther.at(0);
 
     for (std::size_t i = 1; i < m_Data.size(); i++)
     {
-        if ((m_Data.at(i) / xOther.at(i)) != tToControl)
-            return false;
+        const auto tResult = m_Data.at(i) / xOther.at(i);
+        if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>)
+        {
+            if ((tResult - tToControl) > std::numeric_limits<T>::epsilon())
+                return false;
+        }
+        else
+        {
+            if ((tResult - tToControl) > T::epsilon())
+                return false;
+        }
     }
     return true;
 }
@@ -298,12 +307,21 @@ bool Vector<T>::antiParallel(const Vector<T> &xOther) const noexcept
 {
     if (xOther.size() != size())
         return false;
-    const auto &tToControl = (m_Data.at(0) / xOther.at(0)) * -1;
+    const auto tToControl = (m_Data.at(0) / xOther.at(0)) * -1;
 
     for (std::size_t i = 1; i < m_Data.size(); i++)
     {
-        if (((m_Data.at(i) / xOther.at(i)) * -1) != tToControl)
-            return false;
+        const auto tResult = (m_Data.at(i) / xOther.at(i)) * -1;
+        if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>)
+        {
+            if ((tResult - tToControl) > std::numeric_limits<T>::epsilon())
+                return false;
+        }
+        else
+        {
+            if ((tResult - tToControl) > T::epsilon())
+                return false;
+        }
     }
     return true;
 }
