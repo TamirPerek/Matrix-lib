@@ -21,8 +21,8 @@ public:
     static Vector<T> create(const std::vector<T> &xVector) noexcept;
     static Vector<T> create(const Vector<T> &xVector) noexcept;
 
-    const std::vector<T> getData() const noexcept;
-    std::vector<T> getData() noexcept;
+    const std::vector<T> &getData() const noexcept;
+    std::vector<T> &getData() noexcept;
     constexpr const Row &getRows() const noexcept;
 
     void erase() noexcept;
@@ -127,7 +127,7 @@ public:
 template <typename T>
 Vector<T>::Vector(const Row &xRows) noexcept
 {
-    if (xRows.get() > 0ul)
+    if (xRows.get() > 0UL)
     {
         m_Data.resize(xRows.get());
         m_Rows = xRows;
@@ -159,12 +159,12 @@ Vector<T> Vector<T>::create(const Vector<T> &xVector) noexcept
     return Vector<T>{xVector};
 }
 template <typename T>
-const std::vector<T> Vector<T>::getData() const noexcept
+const std::vector<T> &Vector<T>::getData() const noexcept
 {
     return m_Data;
 }
 template <typename T>
-std::vector<T> Vector<T>::getData() noexcept
+std::vector<T> &Vector<T>::getData() noexcept
 {
     return m_Data;
 }
@@ -176,7 +176,7 @@ constexpr const Row &Vector<T>::getRows() const noexcept
 template <typename T>
 void Vector<T>::erase() noexcept
 {
-    m_Rows = 0ul;
+    m_Rows = 0UL;
     m_Data.clear();
 }
 
@@ -203,7 +203,7 @@ template <typename T>
 T Vector<T>::magnitude() const noexcept
 {
 #if defined(__clang__) || defined(_MSC_VER) // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is not yet solved
-    if constexpr (std::is_integral<T>::value || std::is_same<double, T>::value)
+    if constexpr (std::is_integral_v<T> || std::is_same_v<double, T>)
     {
         T tSum{0};
         for (const auto &tElem : m_Data)
@@ -213,7 +213,7 @@ T Vector<T>::magnitude() const noexcept
 
         return static_cast<T>(std::sqrt(tSum));
     }
-    else if constexpr (std::is_same<long double, T>::value)
+    else if constexpr (std::is_same_v<long double, T>)
     {
         T tSum{0};
         for (const auto &tElem : m_Data)
@@ -223,7 +223,7 @@ T Vector<T>::magnitude() const noexcept
 
         return static_cast<T>(std::sqrtl(tSum));
     }
-    else if constexpr (std::is_same<float, T>::value)
+    else if constexpr (std::is_same_v<float, T>)
     {
         T tSum{0};
         for (const auto &tElem : m_Data)
@@ -353,7 +353,6 @@ Vector<T> Vector<T>::crossProduct(const Vector<T> &xOther) const noexcept
     tTemp.emplace_back(at(0) * xOther.at(1) - at(1) * xOther.at(0));
 
     return create(tTemp);
-    ;
 }
 
 template <typename T>
