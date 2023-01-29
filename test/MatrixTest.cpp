@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
+#include <random>
 
 struct MatrixTest : public testing::Test
 {
@@ -13,12 +14,27 @@ struct MatrixTest : public testing::Test
 
     void SetUp() override
     {
-        matrixWithData.randomizeWithInts();
+        RandomizeMatrix(matrixWithData);
     }
 
     Matrix<double> &Get()
     {
         return matrix;
+    }
+
+    static void RandomizeMatrix(Matrix<double> &_In) noexcept
+    {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_real_distribution dist(0.0, 1.0);
+
+        for (auto &column : _In.getMatrix())
+        {
+            for (auto &element : column)
+            {
+                element = dist(rng);
+            }
+        }
     }
 };
 
@@ -44,7 +60,7 @@ TEST_F(MatrixTest, move)
 TEST_F(MatrixTest, randomize)
 {
     auto tMatrix = Get();
-    EXPECT_TRUE(tMatrix.randomizeWithInts());
+    RandomizeMatrix(tMatrix);
 
     std::vector<double> tControl;
     tControl.reserve(tMatrix.getCols().get() * tMatrix.getRows().get());
@@ -67,7 +83,7 @@ TEST_F(MatrixTest, randomize)
 TEST_F(MatrixTest, ceate_from_array)
 {
     auto tMatrix = Get();
-    tMatrix.randomizeWithInts();
+    RandomizeMatrix(tMatrix);
 
     Matrix<double> tMatrixToControl = Matrix<double>::create(tMatrix.getMatrix().at(0));
 
@@ -80,7 +96,7 @@ TEST_F(MatrixTest, ceate_from_array)
 TEST_F(MatrixTest, create_from_vector_matrix)
 {
     auto tMatrix = Get();
-    tMatrix.randomizeWithInts();
+    RandomizeMatrix(tMatrix);
 
     auto tMatrixToControl = Matrix<double>::create(tMatrix.getMatrix());
 
@@ -96,7 +112,7 @@ TEST_F(MatrixTest, create_from_vector_matrix)
 TEST_F(MatrixTest, create_from_other_matrix)
 {
     auto tMatrix = Get();
-    tMatrix.randomizeWithInts();
+    RandomizeMatrix(tMatrix);
 
     auto tMatrixToControl = Matrix<double>::create(tMatrix);
 
@@ -112,7 +128,7 @@ TEST_F(MatrixTest, create_from_other_matrix)
 TEST_F(MatrixTest, transpose)
 {
     auto tMatrix = Get();
-    tMatrix.randomizeWithInts();
+    RandomizeMatrix(tMatrix);
     auto tMatrix_control = tMatrix;
     tMatrix.transpose();
 
@@ -138,12 +154,9 @@ TEST_F(MatrixTest, erase)
 TEST_F(MatrixTest, operator_plus_equals_matrix)
 {
     auto tMatrix = matrixWithData;
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
     auto tMatrixToControl = Get();
     auto tMatrixToControl2 = tMatrix;
-    tMatrixToControl.randomizeWithInts();
+    RandomizeMatrix(tMatrixToControl);
 
     tMatrix += tMatrixToControl;
 
@@ -159,12 +172,9 @@ TEST_F(MatrixTest, operator_plus_equals_matrix)
 TEST_F(MatrixTest, operator_minus_equals_matrix)
 {
     auto tMatrix = matrixWithData;
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
     auto tMatrixToControl = Get();
     auto tMatrixToControl2 = tMatrix;
-    tMatrixToControl.randomizeWithInts();
+    RandomizeMatrix(tMatrixToControl);
 
     tMatrix -= tMatrixToControl;
 
@@ -180,10 +190,8 @@ TEST_F(MatrixTest, operator_multiply_equals_matrix_normal)
 {
     auto tMatrix = matrixWithData;
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
     auto tMatrixToControl = Matrix<double>::create(Row{gColumns}, Column{gRows});
-    tMatrixToControl.randomizeWithInts();
+    RandomizeMatrix(tMatrixToControl);
 
     std::vector<std::vector<double>> tMatrixToControl2;
     tMatrixToControl2.resize(tMatrix.getRows().get());
@@ -235,12 +243,10 @@ TEST_F(MatrixTest, operator_multiply_equals_matrix_powerOf)
 TEST_F(MatrixTest, operator_multiply_equals_matrix_Zeilenvektor_mal_Spaltenvektor)
 {
     auto tMatrix = Matrix<double>::create(Row{1}, Column{4});
-    tMatrix.randomizeWithInts();
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    RandomizeMatrix(tMatrix);
 
     auto tMatrixToControl = Matrix<double>::create(Row{4}, Column{1});
-    tMatrixToControl.randomizeWithInts();
+    RandomizeMatrix(tMatrixToControl);
 
     std::vector<std::vector<double>> tMatrixToControl2;
     tMatrixToControl2.resize(tMatrix.getRows().get());
@@ -271,12 +277,10 @@ TEST_F(MatrixTest, operator_multiply_equals_matrix_Zeilenvektor_mal_Spaltenvekto
 TEST_F(MatrixTest, operator_multiply_equals_matrix_Spaltenvektor_mal_Zeilenvektor)
 {
     auto tMatrix = Matrix<double>::create(Row{4}, Column{1});
-    tMatrix.randomizeWithInts();
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    RandomizeMatrix(tMatrix);
 
     auto tMatrixToControl = Matrix<double>::create(Row{1}, Column{4});
-    tMatrixToControl.randomizeWithInts();
+    RandomizeMatrix(tMatrixToControl);
 
     std::vector<std::vector<double>> tMatrixToControl2;
     tMatrixToControl2.resize(tMatrix.getRows().get());
@@ -310,8 +314,10 @@ TEST_F(MatrixTest, operator_plus_equals_double)
 
     auto tMatrixToControl = tMatrix;
 
-    std::srand(static_cast<unsigned int>(time(NULL)));
-    auto tElem = (static_cast<double>((std::rand()) % 10000000)) / 10000000;
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_real_distribution dist(0.0, 1.0);
+    auto tElem = dist(rng);
 
     tMatrix += tElem;
 
@@ -329,8 +335,10 @@ TEST_F(MatrixTest, operator_minus_equals_double)
 
     auto tMatrixToControl = tMatrix;
 
-    std::srand(static_cast<unsigned int>(time(NULL)));
-    auto tElem = (static_cast<double>((std::rand()) % 10000000)) / 10000000;
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_real_distribution dist(0.0, 1.0);
+    auto tElem = dist(rng);
 
     tMatrix -= tElem;
 
@@ -348,8 +356,10 @@ TEST_F(MatrixTest, operator_multiply_equals_double)
 
     auto tMatrixToControl = tMatrix;
 
-    std::srand(static_cast<unsigned int>(time(NULL)));
-    auto tElem = (static_cast<double>((std::rand()) % 10000000)) / 10000000;
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_real_distribution dist(0.0, 1.0);
+    auto tElem = dist(rng);
 
     tMatrix *= tElem;
 
@@ -366,10 +376,8 @@ TEST_F(MatrixTest, operator_not_equals)
 {
     auto tMatrix = matrixWithData;
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
     auto tMatrixToControl = Get();
-    tMatrixToControl.randomizeWithInts();
+    RandomizeMatrix(tMatrixToControl);
 
     EXPECT_TRUE(tMatrix != tMatrixToControl);
 }

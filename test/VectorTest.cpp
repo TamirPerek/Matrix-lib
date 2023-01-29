@@ -15,22 +15,26 @@ struct VectorTest : public testing::Test
 
     void SetUp() override
     {
-        std::srand(static_cast<unsigned int>(time(NULL)));
     }
 
-    const Vector<double> &Get() noexcept
+    const Vector<double> &Get() const noexcept
     {
         return vector;
     }
+
+    static void randomize(Vector<double> &xVector) noexcept
+    {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_real_distribution dist(0.0, 1.0);
+
+        for (auto &tElem : xVector)
+        {
+            tElem = dist(rng);
+        }
+    }
 };
 
-void randomize(Vector<double> &xVector)
-{
-    for (auto &tElem : xVector)
-    {
-        tElem = (static_cast<double>((std::rand()) % 10000000)) / 10000000;
-    }
-}
 
 TEST_F(VectorTest, create)
 {

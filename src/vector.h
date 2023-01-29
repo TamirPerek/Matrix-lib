@@ -12,8 +12,8 @@ private:
     std::vector<T> m_Data{};
 
     Vector() noexcept = default;
-    Vector(const Row &xRows) noexcept;
-    Vector(const std::vector<T> &xVector) noexcept;
+    explicit Vector(const Row &xRows) noexcept;
+    explicit Vector(const std::vector<T> &xVector) noexcept;
 
 public:
     static Vector<T> create() noexcept;
@@ -64,7 +64,7 @@ public:
         using pointer = T *;
         using reference = T &;
 
-        Iterator(pointer ptr) : m_ptr(ptr) {}
+        explicit Iterator(pointer ptr) : m_ptr(ptr) {}
 
         reference operator*() const { return *m_ptr; }
         pointer operator->() { return m_ptr; }
@@ -95,10 +95,10 @@ public:
         using pointer = T *;
         using reference = T &;
 
-        Const_Iterator(pointer ptr) : m_ptr(ptr) {}
+        explicit Const_Iterator(pointer ptr) : m_ptr(ptr) {}
 
         reference operator*() { return *m_ptr; }
-        const pointer operator->() { return m_ptr; }
+        pointer operator->() { return m_ptr; }
         Const_Iterator &operator++()
         {
             m_ptr++;
@@ -135,9 +135,8 @@ Vector<T>::Vector(const Row &xRows) noexcept
 }
 template <typename T>
 Vector<T>::Vector(const std::vector<T> &xVector) noexcept
+: m_Data{xVector}, m_Rows{xVector.size()}
 {
-    m_Data = xVector;
-    m_Rows = xVector.size();
 }
 template <typename T>
 Vector<T> Vector<T>::create() noexcept

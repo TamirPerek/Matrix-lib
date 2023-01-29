@@ -19,34 +19,38 @@ class Matrix
 {
 private:
     Column m_Columns{}; // Colums
-    Row m_Rows{};    // Rows
+    Row m_Rows{};       // Rows
     std::vector<std::vector<T>> m_Matrix{};
 
     Matrix() noexcept = default;
-    Matrix(const Row &rows, const Column &cols);
-    Matrix(const std::vector<T> &array);
-    Matrix(const std::vector<std::vector<T>> &input_matrix);
+    explicit Matrix(const Row &rows, const Column &cols);
+    explicit Matrix(const std::vector<T> &array);
+    explicit Matrix(const std::vector<std::vector<T>> &input_matrix);
 
 public:
+    Matrix(const Matrix<T> &) noexcept = default;
+    Matrix(Matrix<T> &&) noexcept = default;
+    Matrix &operator=(const Matrix<T> &) noexcept = default;
+    Matrix &operator=(Matrix<T> &&) noexcept = default;
+
     static Matrix<T> create();
     static Matrix<T> create(const Row &rows, const Column &cols);
     static Matrix<T> create(const std::vector<T> &array);
     static Matrix<T> create(const std::vector<std::vector<T>> &input_matrix);
     static Matrix<T> create(const Matrix<T> &org);
 
-    std::vector<std::vector<T>> getMatrix(void) const noexcept;
+    const std::vector<std::vector<T>> &getMatrix() const noexcept;
+    std::vector<std::vector<T>> &getMatrix() noexcept;
     constexpr const Row &getRows() const noexcept;
     constexpr const Column &getCols() const noexcept;
-    bool randomizeWithInts(void);
-    const std::string toString() const noexcept;
+    std::string toString() const noexcept;
 
     void erase() noexcept;
 
     bool transpose();
 
-    friend std::ostream &operator<<<>(std::ostream &os, const Matrix<T> &matrix);
+    friend std::ostream &operator<< <>(std::ostream &os, const Matrix<T> &matrix);
 
-    Matrix<T> &operator=(const Matrix<T> &org);
     Matrix<T> &operator+=(const Matrix<T> &org);
     Matrix<T> &operator+=(const T &n);
     Matrix<T> &operator-=(const Matrix<T> &org);
@@ -70,10 +74,10 @@ Matrix<T>::Matrix(const Row &rows, const Column &cols)
 {
     this->m_Columns = cols;
     this->m_Rows = rows;
-    if (this->m_Rows > 0ul)
+    if (this->m_Rows > 0UL)
     {
         this->m_Matrix.resize(m_Rows.get());
-        if (this->m_Columns > 0ul)
+        if (this->m_Columns > 0UL)
         {
             for (auto &&column : this->m_Matrix)
             {
@@ -100,7 +104,7 @@ template <typename T>
 Matrix<T>::Matrix(const std::vector<std::vector<T>> &input_matrix)
 {
     this->m_Rows = input_matrix.size();
-    if (this->m_Rows > 0ul)
+    if (this->m_Rows > 0UL)
         this->m_Columns = input_matrix.at(0).size();
     else
         this->m_Columns = 0;
@@ -109,36 +113,42 @@ Matrix<T>::Matrix(const std::vector<std::vector<T>> &input_matrix)
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::create()
+inline Matrix<T> Matrix<T>::create()
 {
     return Matrix<T>();
 }
 template <typename T>
-Matrix<T> Matrix<T>::create(const Row &rows, const Column &cols)
+inline Matrix<T> Matrix<T>::create(const Row &rows, const Column &cols)
 {
     return Matrix<T>(rows, cols);
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::create(const std::vector<T> &array)
+inline Matrix<T> Matrix<T>::create(const std::vector<T> &array)
 {
     return Matrix<T>(array);
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::create(const std::vector<std::vector<T>> &input_matrix)
+inline Matrix<T> Matrix<T>::create(const std::vector<std::vector<T>> &input_matrix)
 {
     return Matrix<T>(input_matrix);
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::create(const Matrix<T> &org)
+inline Matrix<T> Matrix<T>::create(const Matrix<T> &org)
 {
     return Matrix<T>(org);
 }
 
 template <typename T>
-std::vector<std::vector<T>> Matrix<T>::getMatrix(void) const noexcept
+inline const std::vector<std::vector<T>> &Matrix<T>::getMatrix(void) const noexcept
+{
+    return this->m_Matrix;
+}
+
+template <typename T>
+inline std::vector<std::vector<T>> &Matrix<T>::getMatrix() noexcept
 {
     return this->m_Matrix;
 }
@@ -156,45 +166,16 @@ constexpr const Column &Matrix<T>::getCols() const noexcept
 }
 
 template <typename T>
-bool Matrix<T>::randomizeWithInts(void)
-{
-    if constexpr (std::is_arithmetic_v<T>)
-    {
-        std::srand(static_cast<unsigned int>(time(NULL)));
-
-        for (auto &column : this->m_Matrix)
-        {
-            for (auto &element : column)
-            {
-                element = (static_cast<T>((std::rand()) % 10000000)) / 10000000;
-            }
-        }
-    }
-    else
-    {
-        for (const auto &column : this->m_Matrix)
-        {
-            for (const auto &element : column)
-            {
-                element.randomize();
-            }
-        }
-    }
-
-    return true;
-}
-
-template <typename T>
-const std::string Matrix<T>::toString() const noexcept
+inline std::string Matrix<T>::toString() const noexcept
 {
     std::string result = "";
     for (auto &&column : this->m_Matrix)
     {
-        result += " | ";
+        result += " | ";
         for (auto &&element : column)
         {
             result += std::to_string(element);
-            result += " | ";
+            result += " | ";
         }
         result += "\n";
     }
@@ -202,7 +183,7 @@ const std::string Matrix<T>::toString() const noexcept
 }
 
 template <typename T>
-bool Matrix<T>::transpose()
+inline bool Matrix<T>::transpose()
 {
     std::vector<std::vector<T>> result = this->getMatrix();
 
@@ -225,19 +206,19 @@ bool Matrix<T>::transpose()
 }
 
 template <typename T>
-void Matrix<T>::erase() noexcept
+inline void Matrix<T>::erase() noexcept
 {
     this->m_Matrix.clear();
-    this->m_Columns = 0ul;
-    this->m_Rows = 0ul;
+    this->m_Columns = 0UL;
+    this->m_Rows = 0UL;
 }
 
 template <typename T>
-std::ostream &operator<<(std::ostream &os, const Matrix<T> &matrix)
+inline std::ostream &operator<<(std::ostream &os, const Matrix<T> &matrix)
 {
     for (const auto &column : matrix.getMatrix())
     {
-        os << " | ";
+        os << " | ";
         for (const auto &element : column)
         {
             os << element << " | ";
@@ -248,17 +229,7 @@ std::ostream &operator<<(std::ostream &os, const Matrix<T> &matrix)
 }
 
 template <typename T>
-Matrix<T> &Matrix<T>::operator=(const Matrix<T> &org)
-{
-    this->m_Columns = org.m_Columns;
-    this->m_Rows = org.m_Rows;
-    this->m_Matrix = org.m_Matrix;
-
-    return *this;
-}
-
-template <typename T>
-Matrix<T> &Matrix<T>::operator+=(const Matrix<T> &org)
+inline Matrix<T> &Matrix<T>::operator+=(const Matrix<T> &org)
 {
     auto tResult = *this + org;
     *this = std::move(tResult);
@@ -266,7 +237,7 @@ Matrix<T> &Matrix<T>::operator+=(const Matrix<T> &org)
     return *this;
 }
 template <typename T>
-Matrix<T> &Matrix<T>::operator+=(const T &n)
+inline Matrix<T> &Matrix<T>::operator+=(const T &n)
 {
     auto tResult = *this + n;
     *this = std::move(tResult);
@@ -275,7 +246,7 @@ Matrix<T> &Matrix<T>::operator+=(const T &n)
 }
 
 template <typename T>
-Matrix<T> &Matrix<T>::operator-=(const Matrix<T> &org)
+inline Matrix<T> &Matrix<T>::operator-=(const Matrix<T> &org)
 {
     auto tResult = *this - org;
     *this = std::move(tResult);
@@ -284,7 +255,7 @@ Matrix<T> &Matrix<T>::operator-=(const Matrix<T> &org)
 }
 
 template <typename T>
-Matrix<T> &Matrix<T>::operator-=(const T &n)
+inline Matrix<T> &Matrix<T>::operator-=(const T &n)
 {
     auto tResult = *this - n;
     *this = std::move(tResult);
@@ -293,7 +264,7 @@ Matrix<T> &Matrix<T>::operator-=(const T &n)
 }
 
 template <typename T>
-Matrix<T> &Matrix<T>::operator*=(const Matrix<T> &org)
+inline Matrix<T> &Matrix<T>::operator*=(const Matrix<T> &org)
 {
     auto tResult = *this * org;
     *this = std::move(tResult);
@@ -302,7 +273,7 @@ Matrix<T> &Matrix<T>::operator*=(const Matrix<T> &org)
 }
 
 template <typename T>
-Matrix<T> &Matrix<T>::operator*=(const T &n)
+inline Matrix<T> &Matrix<T>::operator*=(const T &n)
 {
     auto tResult = *this * n;
     *this = std::move(tResult);
@@ -311,7 +282,7 @@ Matrix<T> &Matrix<T>::operator*=(const T &n)
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::operator+(const Matrix<T> &org)
+inline Matrix<T> Matrix<T>::operator+(const Matrix<T> &org)
 {
     if (this->m_Rows.get() == org.m_Rows.get() || this->m_Columns.get() == org.m_Columns.get())
     {
@@ -331,7 +302,7 @@ Matrix<T> Matrix<T>::operator+(const Matrix<T> &org)
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::operator+(const T &n)
+inline Matrix<T> Matrix<T>::operator+(const T &n)
 {
     Matrix<T> result = create(this->m_Rows, this->m_Columns);
     for (size_t i = 0; i < this->m_Rows; i++)
@@ -347,7 +318,7 @@ Matrix<T> Matrix<T>::operator+(const T &n)
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::operator-(const Matrix<T> &org)
+inline Matrix<T> Matrix<T>::operator-(const Matrix<T> &org)
 {
     if (this->m_Rows.get() == org.m_Rows.get() || this->m_Columns.get() == org.m_Columns.get())
     {
@@ -367,7 +338,7 @@ Matrix<T> Matrix<T>::operator-(const Matrix<T> &org)
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::operator-(const T &n)
+inline Matrix<T> Matrix<T>::operator-(const T &n)
 {
     Matrix<T> result = create(this->m_Rows, this->m_Columns);
     for (size_t i = 0; i < this->m_Rows; i++)
@@ -383,7 +354,7 @@ Matrix<T> Matrix<T>::operator-(const T &n)
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::operator*(const Matrix<T> &org)
+inline Matrix<T> Matrix<T>::operator*(const Matrix<T> &org)
 {
     std::vector<std::vector<T>> result;
     if (this->m_Columns.get() == org.m_Rows.get())
@@ -415,11 +386,11 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &org)
             }
         }
     }
-    return result;
+    return Matrix<T>{result};
 }
 
 template <typename T>
-Matrix<T> Matrix<T>::operator*(const T &n)
+inline Matrix<T> Matrix<T>::operator*(const T &n)
 {
     Matrix<T> result = create(this->m_Rows, this->m_Columns);
     for (size_t i = 0; i < this->m_Rows; i++)
@@ -434,7 +405,7 @@ Matrix<T> Matrix<T>::operator*(const T &n)
 }
 
 template <typename T>
-bool Matrix<T>::operator==(const Matrix<T> &org)
+inline bool Matrix<T>::operator==(const Matrix<T> &org)
 {
     if (this->m_Columns.get() == org.m_Columns.get() && this->m_Rows.get() == org.m_Rows.get())
     {
@@ -455,7 +426,7 @@ bool Matrix<T>::operator==(const Matrix<T> &org)
 }
 
 template <typename T>
-bool Matrix<T>::operator!=(const Matrix<T> &org)
+inline bool Matrix<T>::operator!=(const Matrix<T> &org)
 {
     return !(*this == org);
 }
