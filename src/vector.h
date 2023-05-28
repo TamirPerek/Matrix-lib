@@ -3,6 +3,8 @@
 #include <vector>
 #include <cmath>
 #include <type_traits>
+#include <numeric>
+#include <algorithm>
 
 template <typename T>
 class Vector
@@ -36,8 +38,8 @@ public:
     std::size_t size() const noexcept { return m_Data.size(); }
 
     // Vector math
-    T magnitude() const noexcept;
-    void normalize() noexcept;
+    constexpr T magnitude() const noexcept;
+    constexpr void normalize() noexcept;
     bool opposite(const Vector<T> &xOther) const noexcept;
     bool parallel(const Vector<T> &xOther) const noexcept;
     bool antiParallel(const Vector<T> &xOther) const noexcept;
@@ -135,7 +137,7 @@ Vector<T>::Vector(const Row &xRows) noexcept
 }
 template <typename T>
 Vector<T>::Vector(const std::vector<T> &xVector) noexcept
-: m_Data{xVector}, m_Rows{xVector.size()}
+    : m_Data{xVector}, m_Rows{xVector.size()}
 {
 }
 template <typename T>
@@ -200,67 +202,32 @@ bool Vector<T>::operator!=(const Vector<T> &xOther) noexcept
 }
 
 template <typename T>
-T Vector<T>::magnitude() const noexcept
+constexpr T Vector<T>::magnitude() const noexcept
 {
+    auto tSum = std::accumulate(m_Data.cbegin(), m_Data.cend(), static_cast<T>(0.0), [](T xSum, T xElem)
+                                { return xSum + (xElem * xElem); });
+
 #if defined(__clang__) || defined(_MSC_VER) // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is not yet solved
     if constexpr (std::is_integral_v<T> || std::is_same_v<double, T>)
-    {
-        T tSum{0};
-        for (const auto &tElem : m_Data)
-        {
-            tSum += tElem * tElem;
-        }
-
         return static_cast<T>(std::sqrt(tSum));
-    }
     else if constexpr (std::is_same_v<long double, T>)
-    {
-        T tSum{0};
-        for (const auto &tElem : m_Data)
-        {
-            tSum += tElem * tElem;
-        }
-
         return static_cast<T>(std::sqrtl(tSum));
-    }
     else if constexpr (std::is_same_v<float, T>)
-    {
-        T tSum{0};
-        for (const auto &tElem : m_Data)
-        {
-            tSum += tElem * tElem;
-        }
-
         return static_cast<T>(std::sqrtf(tSum));
-    }
     else
-    {
-        T tSum{0};
-        for (const auto &tElem : m_Data)
-        {
-            tSum += tElem * tElem;
-        }
         return static_cast<T>(std::sqrt(tSum));
-    }
 #else
-    T tSum{0};
-    for (const auto &tElem : m_Data)
-    {
-        tSum += tElem * tElem;
-    }
-
     return static_cast<T>(std::sqrt(tSum));
 #endif
 }
 
 template <typename T>
-void Vector<T>::normalize() noexcept
+constexpr void Vector<T>::normalize() noexcept
 {
     const auto tMagnitude = magnitude();
-    for (auto &tElem : m_Data)
-    {
-        tElem /= tMagnitude;
-    }
+
+    std::transform(m_Data.cbegin(), m_Data.cend(), m_Data.begin(), [tMagnitude](T xElem)
+                   { return xElem / tMagnitude; });
 }
 
 template <typename T>
@@ -269,13 +236,11 @@ bool Vector<T>::opposite(const Vector<T> &xOther) const noexcept
     if (xOther.size() != m_Data.size())
         return false;
 
-    for (std::size_t i = 0; i < m_Data.size(); i++)
-    {
-        const auto &tToControl = m_Data.at(i) * -1;
-        if (tToControl != xOther.at(i))
-            return false;
-    }
-    return true;
+    return std::equal(m_Data.cbegin(), m_Data.cend(), xOther.m_Data.cbegin(), xOther.m_Data.cend(), [](T xElem1, T xElem2)
+                      {
+                            const auto tToControl = xElem1 * static_cast<T>(-1);
+                            return tToControl == xElem2; 
+                      });
 }
 
 template <typename T>
@@ -283,52 +248,40 @@ bool Vector<T>::parallel(const Vector<T> &xOther) const noexcept
 {
     if (xOther.size() != size())
         return false;
-    const auto tToControl = m_Data.at(0) / xOther.at(0);
 
-    for (std::size_t i = 1; i < m_Data.size(); i++)
-    {
-        const auto tResult = m_Data.at(i) / xOther.at(i);
-        if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>)
-        {
-            if ((tResult - tToControl) > std::numeric_limits<T>::epsilon())
-                return false;
-        }
-        else
-        {
-            if ((tResult - tToControl) > T::epsilon())
-                return false;
-        }
-    }
-    return true;
+    const auto tToControl = m_Data.front() / xOther.m_Data.front();
+
+    return std::equal(m_Data.cbegin(), m_Data.cend(), xOther.m_Data.cbegin(), xOther.m_Data.cend(), [&tToControl](auto xElem1, auto xElem2)
+                      {
+                            const auto tResult = xElem1 / xElem2;
+                            if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>)
+                                return (tResult - tToControl) <= std::numeric_limits<T>::epsilon();
+                            else
+                                return (tResult - tToControl) <= T::epsilon(); 
+                      });
 }
 template <typename T>
 bool Vector<T>::antiParallel(const Vector<T> &xOther) const noexcept
 {
     if (xOther.size() != size())
         return false;
-    const auto tToControl = (m_Data.at(0) / xOther.at(0)) * -1;
 
-    for (std::size_t i = 1; i < m_Data.size(); i++)
-    {
-        const auto tResult = (m_Data.at(i) / xOther.at(i)) * -1;
-        if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>)
-        {
-            if ((tResult - tToControl) > std::numeric_limits<T>::epsilon())
-                return false;
-        }
-        else
-        {
-            if ((tResult - tToControl) > T::epsilon())
-                return false;
-        }
-    }
-    return true;
+    const auto tToControl = (m_Data.front() / xOther.m_Data.front()) * static_cast<T>(-1);
+
+    return std::equal(m_Data.cbegin(), m_Data.cend(), xOther.m_Data.cbegin(), xOther.m_Data.cend(), [&tToControl](auto xElem1, auto xElem2)
+                      {
+                            const auto tResult = (xElem1 / xElem2) * static_cast<T>(-1);
+                            if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>)
+                                return (tResult - tToControl) <= std::numeric_limits<T>::epsilon();
+                            else
+                                return (tResult - tToControl) <= T::epsilon(); 
+                      });
 }
 
 template <typename T>
 T Vector<T>::dotProduct(const Vector<T> &xOther) const noexcept
 {
-    T tResult{0};
+    T tResult{static_cast<T>(0)};
 
     if (xOther.size() != size())
         return tResult;
@@ -370,7 +323,7 @@ Vector<T> Vector<T>::operator+(const Vector<T> &xOther) const noexcept
     if (xOther.size() != size())
         return tResult;
 
-    for (std::size_t i = 0; i < size(); i++)
+    for (std::size_t i = 0; i < size(); ++i)
     {
         tResult.at(i) = this->at(i) + xOther.at(i);
     }
@@ -389,7 +342,7 @@ Vector<T> Vector<T>::operator+(const T &xOther) const noexcept
 {
     Vector<T> tResult{Row{size()}};
 
-    for (std::size_t i = 0; i < size(); i++)
+    for (std::size_t i = 0; i < size(); ++i)
     {
         tResult.at(i) = this->at(i) + xOther;
     }
@@ -411,7 +364,7 @@ Vector<T> Vector<T>::operator-(const Vector<T> &xOther) const noexcept
 
     Vector<T> tResult{Row{size()}};
 
-    for (std::size_t i = 0; i < size(); i++)
+    for (std::size_t i = 0; i < size(); ++i)
     {
         tResult.at(i) = this->at(i) - xOther.at(i);
     }
@@ -430,7 +383,7 @@ Vector<T> Vector<T>::operator-(const T &xOther) const noexcept
 {
     Vector<T> tResult{Row{size()}};
 
-    for (std::size_t i = 0; i < size(); i++)
+    for (std::size_t i = 0; i < size(); ++i)
     {
         tResult.at(i) = this->at(i) - xOther;
     }
@@ -449,7 +402,7 @@ Vector<T> Vector<T>::operator*(const T &xOther) const noexcept
 {
     Vector<T> tResult{Row{size()}};
 
-    for (std::size_t i = 0; i < size(); i++)
+    for (std::size_t i = 0; i < size(); ++i)
     {
         tResult.at(i) = this->at(i) * xOther;
     }
