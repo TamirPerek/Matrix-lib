@@ -17,4 +17,5 @@ Info.plist
 *.json
 
 build/
+build.nosync/
 bin/
