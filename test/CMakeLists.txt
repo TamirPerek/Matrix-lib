@@ -1,4 +1,4 @@
-set(THIS MatrixTests)
+set(THIS Matrix-Lib-Tests)
 
 add_executable(${THIS} 
     MatrixTest.cpp
@@ -7,7 +7,7 @@ add_executable(${THIS}
 
 target_link_libraries(${THIS}
                         gtest_main
-                        Matrix
+                        Matrix-Lib
 )
 
 add_test(

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2.0)
 
-project(MatrixLib VERSION 0.1.0)
+project(Matrix-Lib VERSION 0.1.0)
 
 option(MATRIX_INCLUDE_TESTS "Enables unit tests with googletest" ON)
 
