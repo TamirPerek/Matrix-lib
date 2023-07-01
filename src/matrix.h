@@ -94,7 +94,7 @@ Matrix<T>::Matrix(const std::vector<T> &array)
     this->m_Rows = array.size();
 
     this->m_Matrix.resize(this->m_Rows.get());
-    for (size_t i = 0; i < this->m_Rows; i++)
+    for (size_t i = 0; i < this->m_Rows; ++i)
     {
         this->m_Matrix.at(i).push_back(array.at(i));
     }
@@ -190,9 +190,9 @@ inline bool Matrix<T>::transpose()
     Matrix<T> newMatrix = create(Row{this->m_Columns.get()}, Column{this->m_Rows.get()});
     this->m_Matrix = newMatrix.m_Matrix;
 
-    for (size_t i = 0; i < this->m_Columns; i++)
+    for (size_t i = 0; i < this->m_Columns; ++i)
     {
-        for (size_t j = 0; j < this->m_Rows; j++)
+        for (size_t j = 0; j < this->m_Rows; ++j)
         {
             this->m_Matrix.at(i).at(j) = result.at(j).at(i);
         }
@@ -284,7 +284,7 @@ inline Matrix<T> &Matrix<T>::operator*=(const T &n)
 template <typename T>
 inline Matrix<T> Matrix<T>::operator+(const Matrix<T> &org)
 {
-    if (this->m_Rows.get() == org.m_Rows.get() || this->m_Columns.get() == org.m_Columns.get())
+    if (this->m_Rows.get() == org.m_Rows.get() && this->m_Columns.get() == org.m_Columns.get())
     {
         Matrix<T> result = create(this->m_Rows, this->m_Columns);
 
@@ -307,7 +307,6 @@ inline Matrix<T> Matrix<T>::operator+(const T &n)
     Matrix<T> result = create(this->m_Rows, this->m_Columns);
     for (size_t i = 0; i < this->m_Rows; i++)
     {
-
         for (size_t j = 0; j < this->m_Columns; j++)
         {
             result.m_Matrix.at(i).at(j) = this->m_Matrix.at(i).at(j) + n;
